@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  * {
+    border-color: #e5e7eb;
+  }
+
+  body {
+    background-color: #f8fafc;
+    color: #111827;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Motion system
+   - ease-out entrances only
+   - transform/opacity only, sub-300ms
+   - respects prefers-reduced-motion
+   ------------------------------------------------------------------ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-right {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-bottom {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 250ms ease-out both;
+}
+
+.animate-fade-in-right {
+  animation: fade-in-right 220ms ease-out both;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 260ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Custom utility classes for the drayage marketplace
+   ------------------------------------------------------------------ */
+.status-open {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200;
+}
+
+.status-bidding {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-brand-orange border border-orange-200;
+}
+
+.status-awarded {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200;
+}
+
+.status-in_transit {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200;
+}
+
+.status-delivered {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200;
+}
+
+.status-completed {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-300;
+}
+
+.status-cancelled {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200;
+}
+
+/* Scrollbar refinement (WebKit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

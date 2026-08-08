@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="500" height="120">
+  <rect width="500" height="120" rx="16" fill="#0F2B3D"/>
+  <path d="M30 75 L60 30 L90 75 Z" fill="#E8742B"/>
+  <rect x="42" y="50" width="36" height="30" fill="#1A7A6A" rx="3"/>
+  <path d="M50 40 L70 40 L70 50 L50 50 Z" fill="#FFFFFF"/>
+  <text x="110" y="72" font-family="'Inter', sans-serif" font-weight="800" font-size="42" fill="#FFFFFF" letter-spacing="-1">LOAD<tspan fill="#E8742B">BYTON</tspan></text>
+  <text x="112" y="92" font-family="'Inter', sans-serif" font-weight="500" font-size="12" fill="#1A7A6A" letter-spacing="2">DUBAI CONTAINER DRAYAGE MARKETPLACE</text>
+</svg>

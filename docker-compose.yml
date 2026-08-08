@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: loadbyton-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: loadbyton
+      POSTGRES_PASSWORD: loadbyton
+      POSTGRES_DB: loadbyton
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loadbyton"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: loadbyton-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ./packages/api
+      dockerfile: Dockerfile
+    container_name: loadbyton-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://loadbyton:loadbyton@db:5432/loadbyton?schema=public
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "5000:5000"
+
+  web:
+    build:
+      context: ./packages/web
+      dockerfile: Dockerfile
+    container_name: loadbyton-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      VITE_API_URL: http://localhost:5000
+    ports:
+      - "3000:80"
+
+volumes:
+  db_data:
+  redis_data:

@@ -1,0 +1,268 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SHIPPER
+  CARRIER
+  ADMIN
+  DRIVER
+}
+
+enum ContainerSize {
+  TWENTY_FT
+  FORTY_FT
+  FORTY_HC
+  REEFER
+}
+
+enum ContainerType {
+  DRY
+  REEFER
+  HAZMAT
+  OPEN_TOP
+  FLAT_RACK
+}
+
+enum Terminal {
+  JEBEL_ALI_T1
+  JEBEL_ALI_T2
+  JEBEL_ALI_T3
+  JEBEL_ALI_T4
+  KHALIFA
+  SHARJAH
+}
+
+enum Area {
+  JAFZA_NORTH
+  JAFZA_SOUTH
+  AL_QUOZ
+  DIP
+  NIP
+  DAFZA
+  DIC
+  DUBAI_SOUTH
+  OTHER
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  BIDDING
+  AWARDED
+  IN_TRANSIT
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  ESCROW
+  RELEASED
+  DISPUTED
+}
+
+enum DocumentType {
+  CUSTOMS_CLEARANCE
+  COLLECTION_RECEIPT
+  POD
+  TRADE_LICENSE
+  INSURANCE
+  OTHER
+}
+
+enum NotificationType {
+  BID_RECEIVED
+  BID_ACCEPTED
+  JOB_AWARDED
+  JOB_STARTED
+  JOB_COMPLETED
+  PAYMENT_RELEASED
+  DEMURRAGE_ALERT
+}
+
+enum RatingCategory {
+  PUNCTUALITY
+  COMMUNICATION
+  PROFESSIONALISM
+  VALUE
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(SHIPPER)
+  isVerified    Boolean   @default(false)
+  mfaEnabled    Boolean   @default(false)
+  mfaSecret     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile           Profile?
+  shipperJobs       Job[]          @relation("ShipperJobs")
+  carrierJobs       Job[]          @relation("CarrierJobs")
+  bids              Bid[]
+  sentMessages      Message[]
+  uploadedDocuments Document[]
+  ratingsGiven      Rating[]       @relation("Rater")
+  ratingsReceived   Rating[]       @relation("Ratee")
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+}
+
+model Profile {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName        String
+  trnNumber          String?
+  tradeLicenseNumber String?
+  phone              String?
+  avatarUrl          String?
+  bankName           String?
+  iban               String?
+  ratingAverage      Float    @default(5.0)
+  completedJobsCount Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Job {
+  id             String        @id @default(uuid())
+  jobCode        String        @unique
+  shipperId      String
+  shipper        User          @relation("ShipperJobs", fields: [shipperId], references: [id])
+  carrierId      String?
+  carrier        User?         @relation("CarrierJobs", fields: [carrierId], references: [id])
+  
+  containerSize  ContainerSize
+  containerType  ContainerType
+  containerNumber String?
+  pickupTerminal Terminal
+  deliveryArea   Area
+  deliveryAddress String
+  readyTime      DateTime
+  deadline       DateTime
+  maxBudgetAED   Float?
+  agreedPriceAED Float?
+  status         JobStatus     @default(OPEN)
+  notes          String?
+  requiresReefer Boolean       @default(false)
+  requiresHazmat Boolean       @default(false)
+  hazmatClass    String?
+
+  bids           Bid[]
+  messages       Message[]
+  documents      Document[]
+  payment        Payment?
+  rating         Rating?
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Bid {
+  id          String    @id @default(uuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  carrierId   String
+  carrier     User      @relation(fields: [carrierId], references: [id])
+  amountAED   Float
+  etaMinutes  Int
+  truckType   String
+  driverName  String?
+  notes       String?
+  status      BidStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  jobId          String
+  job            Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User     @relation(fields: [senderId], references: [id])
+  content        String
+  attachmentUrl  String?
+  attachmentName String?
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+model Document {
+  id         String       @id @default(uuid())
+  jobId      String
+  job        Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  uploaderId String
+  uploader   User         @relation(fields: [uploaderId], references: [id])
+  type       DocumentType
+  title      String
+  fileUrl    String
+  fileSize   String?
+  createdAt  DateTime     @default(now())
+}
+
+model Payment {
+  id                    String        @id @default(uuid())
+  jobId                 String        @unique
+  job                   Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  amountAED             Float
+  platformFeeAED        Float
+  netCarrierAED         Float
+  status                PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  transactionRef        String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+}
+
+model Rating {
+  id        String         @id @default(uuid())
+  jobId     String         @unique
+  job       Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  raterId   String
+  rater     User           @relation("Rater", fields: [raterId], references: [id])
+  rateeId   String
+  ratee     User           @relation("Ratee", fields: [rateeId], references: [id])
+  score     Float
+  comment   String?
+  category  RatingCategory @default(PUNCTUALITY)
+  createdAt DateTime       @default(now())
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  jobId     String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
