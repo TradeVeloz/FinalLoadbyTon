@@ -89,7 +89,7 @@ export const JobList: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-navy-900">Loads &amp; Bids</h1>
           <p className="text-sm text-gray-500">
-            Find container haulage loads around Jebel Ali and place bids.
+            Find container haulage loads across the UAE and place bids.
           </p>
         </div>
         {role === 'SHIPPER' && (

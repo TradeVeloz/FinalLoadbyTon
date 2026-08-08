@@ -49,3 +49,22 @@ export function formatContainerSize(size: string): string {
     default: return size;
   }
 }
+
+export interface RouteLabelsInput {
+  pickupAddress?: string;
+  pickupTerminal?: string;
+  deliveryAddress?: string;
+  deliveryArea?: string;
+}
+
+export function pickupLabel(location: RouteLabelsInput): string {
+  if (location.pickupAddress) return location.pickupAddress;
+  if (location.pickupTerminal) return formatTerminalName(location.pickupTerminal);
+  return 'Pickup location';
+}
+
+export function dropLabel(location: RouteLabelsInput): string {
+  if (location.deliveryAddress) return location.deliveryAddress;
+  if (location.deliveryArea) return formatDeliveryArea(location.deliveryArea);
+  return 'Drop-off location';
+}

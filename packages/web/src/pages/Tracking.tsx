@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, ArrowLeft, Satellite, Clock } from 'lucide-react';
-import { TrackingMap } from '@/components/tracking/TrackingMap';
+import { MapPin, ArrowLeft, Package, Truck, Clock, Flag, LocateFixed } from 'lucide-react';
 import { StatusTimeline } from '@/components/tracking/StatusTimeline';
 import { ETAWidget } from '@/components/tracking/ETAWidget';
 import { useJobs } from '@/hooks/useJobs';
@@ -9,23 +8,14 @@ import { fetchApi } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Job } from '@/types';
+import { pickupLabel, dropLabel } from '@/lib/utils';
 
 interface TrackingData {
   jobId: string;
   status?: string;
-  currentLocation?: { lat: number; lng: number };
-  route?: { lat: number; lng: number }[];
   etaMinutes?: number;
   milestones?: { label: string; timestamp: string; completed: boolean }[];
 }
-
-const DEFAULT_ROUTE = [
-  { lat: 25.01, lng: 55.06 },
-  { lat: 25.02, lng: 55.08 },
-  { lat: 25.03, lng: 55.1 },
-  { lat: 25.02, lng: 55.12 },
-  { lat: 25.0, lng: 55.14 },
-];
 
 const DEFAULT_MILESTONES = [
   { label: 'Container released by terminal', timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(), completed: true },
@@ -107,13 +97,13 @@ export const Tracking: React.FC = () => {
   const status = tracking?.status ?? job?.status ?? 'awarded';
   const statusKey = status.toLowerCase() as keyof typeof STATUS_VARIANT;
   const milestones = tracking?.milestones ?? DEFAULT_MILESTONES;
-  const points = tracking?.route ?? DEFAULT_ROUTE;
-  const currentLocation = tracking?.currentLocation ?? points[Math.floor(points.length / 2)];
+  const pickup = job ? pickupLabel(job) : 'Pickup location';
+  const drop = job ? dropLabel(job) : 'Drop-off location';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div className="min-w-0">
           <Link
             to="/jobs"
             className="inline-flex items-center space-x-2 text-sm text-gray-500 hover:text-navy-800"
@@ -121,56 +111,98 @@ export const Tracking: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span>Back to jobs</span>
           </Link>
-          <h1 className="mt-2 text-2xl font-extrabold text-navy-900 tracking-tight flex items-center gap-3">
+          <h1 className="mt-2 text-2xl font-extrabold text-navy-900 tracking-tight flex flex-wrap items-center gap-3">
             <span className="font-mono">{job?.jobCode ?? '—'}</span>
             <Badge variant={STATUS_VARIANT[statusKey] ?? 'awarded'}>
               {status.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}
             </Badge>
           </h1>
-          <p className="mt-1 text-sm text-gray-500 flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-brand-orange" />
-            {job?.pickupTerminal.replace(/_/g, ' ')} → {job?.deliveryAddress || job?.deliveryArea.replace(/_/g, ' ')}
+          <p className="mt-1 text-sm text-gray-500 flex flex-wrap items-center gap-1.5">
+            <MapPin className="w-4 h-4 shrink-0 text-brand-orange" />
+            <span className="min-w-0">
+              <span className="break-words">{pickup}</span>
+              <span className="text-gray-400"> → </span>
+              <span className="break-words">{drop}</span>
+            </span>
           </p>
         </div>
-        <div className="w-56">
+        <div className="w-full sm:w-56 shrink-0">
           <ETAWidget etaMinutes={tracking?.etaMinutes} status={status} />
         </div>
       </div>
 
-      <TrackingMap currentLocation={currentLocation} points={points} containerNumber={job?.containerNumber} />
-
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 shadow-premium">
-          <CardHeader>
-            <CardTitle className="text-base">Movement timeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StatusTimeline milestones={milestones} />
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="shadow-premium">
+            <CardHeader>
+              <CardTitle className="text-base">Movement timeline</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StatusTimeline milestones={milestones} />
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-premium">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <LocateFixed className="w-4 h-4 text-brand-orange" />
+                Route
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col items-center">
+                  <span className="w-3 h-3 mt-1 rounded-full bg-brand-teal ring-4 ring-brand-teal/15" />
+                  <span className="w-0.5 flex-1 bg-gray-200" />
+                  <span className="w-3 h-3 mb-1 rounded-full bg-navy-800 ring-4 ring-navy-800/10" />
+                </div>
+                <div className="space-y-4 pt-0.5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Pickup</p>
+                    <p className="mt-0.5 text-sm font-medium text-navy-800 break-words">{pickup}</p>
+                    {job?.pickupLat != null && job?.pickupLng != null && (
+                      <p className="font-mono text-xs text-gray-400">
+                        {job.pickupLat.toFixed(5)}, {job.pickupLng.toFixed(5)}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Drop-off</p>
+                    <p className="mt-0.5 text-sm font-medium text-navy-800 break-words">{drop}</p>
+                    {job?.deliveryLat != null && job?.deliveryLng != null && (
+                      <p className="font-mono text-xs text-gray-400">
+                        {job.deliveryLat.toFixed(5)}, {job.deliveryLng.toFixed(5)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card className="shadow-premium">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Satellite className="w-4 h-4 text-brand-orange" />
-              Live telemetry
+              <Truck className="w-4 h-4 text-brand-orange" />
+              Shipment details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             {[
-              { label: 'Container', value: job?.containerNumber ?? '—', mono: true },
-              { label: 'Truck', value: job?.carrierName ?? '—' },
+              { label: 'Container', value: job?.containerNumber ?? '—', mono: true, icon: Package },
+              { label: 'Truck', value: job?.carrierName ?? '—', icon: Truck },
               { label: 'Container type', value: `${job?.containerSize?.replace(/_/g, ' ') ?? '—'} · ${job?.containerType ?? ''}` },
-              { label: 'Last update', value: new Date().toLocaleTimeString() },
+              { label: 'Status updated', value: new Date().toLocaleTimeString(), icon: Clock },
             ].map((row) => (
-              <div key={row.label} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+              <div key={row.label} className="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                 <span className="text-gray-500">{row.label}</span>
-                <span className={`font-semibold text-navy-800 ${row.mono ? 'font-mono' : ''}`}>{row.value}</span>
+                <span className={`font-semibold text-navy-800 text-right ${row.mono ? 'font-mono' : ''}`}>{row.value}</span>
               </div>
             ))}
             <div className="flex items-center gap-2 rounded-lg bg-teal-50 px-3 py-2.5 text-xs text-brand-teal">
-              <Clock className="w-4 h-4 shrink-0" />
-              GPS refreshed every 30 seconds.
+              <Flag className="w-4 h-4 shrink-0" />
+              Milestones refresh automatically as the move progresses.
             </div>
           </CardContent>
         </Card>

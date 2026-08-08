@@ -1,0 +1,71 @@
+# Render.com deployment configuration for Loadbyton.
+#
+# Two services:
+#   1. loadbyton-api  - Express API (mock-first, runs entirely in-memory)
+#   2. loadbyton-web  - React SPA (built by Vite, served via `vite preview`)
+#
+# The web service talks to the API service via VITE_API_URL (host-only value;
+# the client normalizes it to https://). Socket.io CORS on the API accepts any
+# *.onrender.com origin, so no extra env wiring is required.
+
+services:
+  - type: web
+    name: loadbyton-api
+    runtime: node
+    plan: free
+    rootDir: packages/api
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: FRONTEND_URL
+        fromService:
+          name: loadbyton-web
+          type: web
+          property: host
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+
+  - type: web
+    name: loadbyton-web
+    runtime: node
+    plan: free
+    rootDir: packages/web
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: VITE_GEOCODING_API_URL
+        value: https://nominatim.openstreetmap.org/search
+      - key: VITE_ENABLE_DARK_MODE
+        value: "true"
+      - key: VITE_ENABLE_ANIMATIONS
+        value: "true"
+      # Point the SPA at the API service. Render resolves `host` from the
+      # companion `loadbyton-api` service; the client derives https://host/api/v1.
+      - key: VITE_API_URL
+        fromService:
+          name: loadbyton-api
+          type: web
+          property: host
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin

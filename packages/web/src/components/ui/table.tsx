@@ -2,33 +2,33 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 
 export const Table: React.FC<React.TableHTMLAttributes<HTMLTableElement>> = ({ className, children, ...props }) => (
-  <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
-    <table className={cn("w-full text-left text-sm text-gray-700", className)} {...props}>
+  <div className="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+    <table className={cn("w-full text-left text-sm text-gray-700 dark:text-gray-200", className)} {...props}>
       {children}
     </table>
   </div>
 );
 
 export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ className, children, ...props }) => (
-  <thead className={cn("bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase tracking-wider text-navy-800", className)} {...props}>
+  <thead className={cn("bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase tracking-wider text-navy-800 dark:bg-navy-800 dark:border-gray-700 dark:text-gray-300", className)} {...props}>
     {children}
   </thead>
 );
 
 export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ className, children, ...props }) => (
-  <tbody className={cn("divide-y divide-gray-200 bg-white", className)} {...props}>
+  <tbody className={cn("divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-navy-900", className)} {...props}>
     {children}
   </tbody>
 );
 
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({ className, children, ...props }) => (
-  <tr className={cn("hover:bg-gray-50/80 transition-colors duration-150", className)} {...props}>
+  <tr className={cn("odd:bg-gray-50/60 hover:bg-brand-orange/5 transition-colors duration-150 dark:odd:bg-navy-950/40 dark:hover:bg-navy-800/60", className)} {...props}>
     {children}
   </tr>
 );
 
 export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> = ({ className, children, ...props }) => (
-  <th className={cn("px-4 py-3 font.semibold", className)} {...props}>
+  <th className={cn("px-4 py-3 font-semibold", className)} {...props}>
     {children}
   </th>
 );

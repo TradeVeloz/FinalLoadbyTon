@@ -72,9 +72,14 @@ export interface Job {
   containerSize: ContainerSize;
   containerType: ContainerType;
   containerNumber?: string;
-  pickupTerminal: Terminal;
-  deliveryArea: DeliveryArea;
+  pickupTerminal?: Terminal;
+  pickupAddress?: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  deliveryArea?: DeliveryArea;
   deliveryAddress: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
   readyTime: string;
   deadline: string;
   maxBudgetAED?: number;

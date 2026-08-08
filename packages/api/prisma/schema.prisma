@@ -153,8 +153,13 @@ model Job {
   containerType  ContainerType
   containerNumber String?
   pickupTerminal Terminal
+  pickupAddress  String?
+  pickupLat      Float?
+  pickupLng      Float?
   deliveryArea   Area
   deliveryAddress String
+  deliveryLat    Float?
+  deliveryLng    Float?
   readyTime      DateTime
   deadline       DateTime
   maxBudgetAED   Float?

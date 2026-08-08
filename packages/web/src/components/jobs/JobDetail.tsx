@@ -13,9 +13,9 @@ import { EscrowPayment } from '@/components/payments/EscrowPayment';
 import { Job, JobStatus } from '@/types';
 import {
   formatCurrencyAED,
-  formatTerminalName,
-  formatDeliveryArea,
   formatContainerSize,
+  pickupLabel,
+  dropLabel,
 } from '@/lib/utils';
 
 const statusVariantMap: Record<JobStatus, NonNullable<BadgeProps['variant']>> = {
@@ -51,9 +51,9 @@ function formatDateTime(iso: string): string {
 }
 
 const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
-  <div className="grid grid-cols-3 gap-4 py-3 border-b border-gray-100 last:border-0">
-    <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500 pt-0.5">{label}</dt>
-    <dd className="col-span-2 text-sm font-medium text-navy-800">{value}</dd>
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-4 py-3 border-b border-gray-100 last:border-0">
+    <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</dt>
+    <dd className="sm:col-span-2 text-sm font-medium text-navy-800">{value}</dd>
   </div>
 );
 
@@ -128,10 +128,13 @@ export const JobDetail: React.FC = () => {
           ? 'Maximum budget'
           : null;
 
+  const pickup = pickupLabel(job);
+  const drop = dropLabel(job);
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link to="/jobs" className="text-gray-500 hover:text-navy-800">
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -170,13 +173,14 @@ export const JobDetail: React.FC = () => {
             <DetailRow
               label="Route"
               value={
-                <span>
-                  {formatTerminalName(job.pickupTerminal)} <span className="text-gray-400">→</span>{' '}
-                  {formatDeliveryArea(job.deliveryArea)}
+                <span className="flex flex-wrap items-center gap-1.5">
+                  <span className="break-words">{pickup}</span>
+                  <span className="text-gray-400">→</span>
+                  <span className="break-words">{drop}</span>
                 </span>
               }
             />
-            <DetailRow label="Delivery address" value={job.deliveryAddress} />
+            {job.deliveryAddress && <DetailRow label="Delivery address" value={job.deliveryAddress} />}
             <DetailRow label="Ready time" value={formatDateTime(job.readyTime)} />
             <DetailRow label="Deadline" value={formatDateTime(job.deadline)} />
             <DetailRow

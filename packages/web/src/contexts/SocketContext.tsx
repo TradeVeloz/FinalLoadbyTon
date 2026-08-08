@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useCallback, useRef, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../hooks/useAuth';
+import { getSocketUrl } from '../lib/api';
 
 interface SocketContextValue {
   connected: boolean;
@@ -20,7 +21,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!token) return;
 
-    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+    const socket = io(getSocketUrl(), {
       autoConnect: true,
       auth: { token },
     });

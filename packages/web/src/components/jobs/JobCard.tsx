@@ -7,11 +7,10 @@ import { Job, JobStatus } from '@/types';
 import {
   cn,
   formatCurrencyAED,
-  formatTerminalName,
-  formatDeliveryArea,
   formatContainerSize,
+  pickupLabel,
+  dropLabel,
 } from '@/lib/utils';
-
 const statusVariantMap: Record<JobStatus, NonNullable<BadgeProps['variant']>> = {
   DRAFT: 'outline',
   OPEN: 'open',
@@ -54,6 +53,9 @@ export const JobCard: React.FC<{ job: Job }> = ({ job }) => {
           ? 'Budget'
           : null;
 
+  const pickup = pickupLabel(job);
+  const drop = dropLabel(job);
+
   return (
     <Card className="h-full group hover:shadow-premium hover:border-brand-orange/40 transition-shadow duration-200">
       <Link to={`/jobs/${job.id}`} className="block h-full">
@@ -78,9 +80,10 @@ export const JobCard: React.FC<{ job: Job }> = ({ job }) => {
           <div className="space-y-1">
             <p className="flex items-center gap-1.5 text-xs text-gray-700">
               <MapPin className="w-3.5 h-3.5 shrink-0 text-brand-orange" />
-              <span>
-                {formatTerminalName(job.pickupTerminal)} <span className="text-gray-400">→</span>{' '}
-                {formatDeliveryArea(job.deliveryArea)}
+              <span className="min-w-0">
+                <span className="break-words">{pickup}</span>
+                <span className="text-gray-400"> → </span>
+                <span className="break-words">{drop}</span>
               </span>
             </p>
             <p className="pl-5 text-xs text-gray-500">{job.deliveryAddress}</p>

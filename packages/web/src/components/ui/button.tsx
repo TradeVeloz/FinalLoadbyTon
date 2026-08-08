@@ -13,21 +13,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   children,
   ...props
 }, ref) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
-  
+  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-navy-950 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:scale-[1.03] active:scale-[0.96] will-change-transform whitespace-nowrap select-none';
+
   const variants = {
-    primary: 'bg-brand-orange text-white hover:bg-brand-orange-hover focus:ring-brand-orange shadow-md shadow-brand-orange/20',
-    secondary: 'bg-navy-800 text-white hover:bg-navy-700 focus:ring-navy-800 shadow-md shadow-navy-900/20',
-    outline: 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 focus:ring-navy-800',
-    ghost: 'text-gray-600 hover:bg-gray-100 hover:text-navy-800 focus:ring-navy-800',
-    destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-600',
-    teal: 'bg-brand-teal text-white hover:bg-teal-700 focus:ring-brand-teal shadow-md shadow-brand-teal/20'
+    primary: 'bg-brand-orange text-white hover:bg-brand-orange-hover shadow-md shadow-brand-orange/25',
+    secondary: 'bg-navy-800 text-white hover:bg-navy-700 shadow-md shadow-navy-900/20 dark:bg-navy-700 dark:hover:bg-navy-600',
+    outline: 'border-2 border-gray-300 text-gray-700 bg-white hover:border-navy-800 hover:text-navy-800 dark:border-gray-700 dark:text-gray-200 dark:bg-transparent dark:hover:border-gray-500 dark:hover:text-white',
+    ghost: 'text-gray-600 hover:bg-gray-100 hover:text-navy-800 dark:text-gray-300 dark:hover:bg-navy-800 dark:hover:text-white',
+    destructive: 'bg-red-600 text-white hover:bg-red-700 shadow-md shadow-red-600/20',
+    teal: 'bg-brand-teal text-white hover:bg-teal-700 shadow-md shadow-brand-teal/20'
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs font-semibold',
-    md: 'px-4 py-2 text-sm font-semibold',
-    lg: 'px-6 py-3 text-base font-bold'
+    sm: 'px-4 h-10 text-sm',
+    md: 'px-5 h-11 text-sm',
+    lg: 'px-7 h-12 text-base'
   };
 
   return (

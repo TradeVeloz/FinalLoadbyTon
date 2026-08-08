@@ -6,16 +6,42 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    --font-display: 'Geist', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
   * {
     border-color: #e5e7eb;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     background-color: #f8fafc;
     color: #111827;
+    font-family: var(--font-body);
+    line-height: 1.5;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-wrap: break-word;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    overflow-wrap: break-word;
+  }
+
+  p, li, dd, dt, blockquote {
+    overflow-wrap: break-word;
+  }
+
+  code, kbd, samp, pre {
+    font-family: var(--font-mono);
   }
 }
 

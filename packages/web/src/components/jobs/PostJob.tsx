@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { LocationInput, GeoLocation } from '@/components/ui/location-input';
 import { useToast } from '@/hooks/useToast';
 import { useJobs } from '@/hooks/useJobs';
-import {
-  formatDeliveryArea,
-  formatTerminalName,
-} from '@/lib/utils';
 
 const CONTAINER_SIZE_OPTIONS = [
   { value: 'TWENTY_FT', label: "20' Standard Dry" },
@@ -27,34 +24,16 @@ const CONTAINER_TYPE_OPTIONS = [
   { value: 'FLAT_RACK', label: 'Flat Rack' },
 ];
 
-const TERMINAL_OPTIONS = [
-  { value: 'JEBEL_ALI_T1', label: 'Jebel Ali Terminal 1' },
-  { value: 'JEBEL_ALI_T2', label: 'Jebel Ali Terminal 2' },
-  { value: 'JEBEL_ALI_T3', label: 'Jebel Ali Terminal 3' },
-  { value: 'JEBEL_ALI_T4', label: 'Jebel Ali Terminal 4' },
-  { value: 'KHALIFA', label: 'Khalifa Port (Abu Dhabi)' },
-  { value: 'SHARJAH', label: 'Sharjah Container Terminal' },
-];
-
-const AREA_OPTIONS = [
-  { value: 'JAFZA_NORTH', label: 'JAFZA North (Zone 1-4)' },
-  { value: 'JAFZA_SOUTH', label: 'JAFZA South (Zone 5-9)' },
-  { value: 'AL_QUOZ', label: 'Al Quoz Industrial' },
-  { value: 'DIP', label: 'Dubai Investments Park' },
-  { value: 'NIP', label: 'National Industries Park' },
-  { value: 'DAFZA', label: 'Dubai Airport Freezone' },
-  { value: 'DIC', label: 'Dubai Industrial City' },
-  { value: 'DUBAI_SOUTH', label: 'Dubai South (Logistics District)' },
-  { value: 'OTHER', label: 'Other' },
-];
-
 interface PostJobForm {
   containerSize: string;
   containerType: string;
   containerNumber: string;
-  pickupTerminal: string;
-  deliveryArea: string;
+  pickupAddress: string;
+  pickupLat?: number;
+  pickupLng?: number;
   deliveryAddress: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
   readyTime: string;
   deadline: string;
   requiresReefer: boolean;
@@ -68,8 +47,7 @@ const EMPTY_FORM: PostJobForm = {
   containerSize: '',
   containerType: '',
   containerNumber: '',
-  pickupTerminal: '',
-  deliveryArea: '',
+  pickupAddress: '',
   deliveryAddress: '',
   readyTime: '',
   deadline: '',
@@ -117,9 +95,8 @@ export const PostJob: React.FC = () => {
       if (!form.containerType) next.containerType = 'Select a container type';
     }
     if (current === 2) {
-      if (!form.pickupTerminal) next.pickupTerminal = 'Select a pickup terminal';
-      if (!form.deliveryArea) next.deliveryArea = 'Select a delivery area';
-      if (!form.deliveryAddress.trim()) next.deliveryAddress = 'Delivery address is required';
+      if (!form.pickupAddress.trim()) next.pickupAddress = 'Pickup location is required';
+      if (!form.deliveryAddress.trim()) next.deliveryAddress = 'Drop-off location is required';
     }
     if (current === 3) {
       if (!form.readyTime) next.readyTime = 'Pick a ready time';
@@ -162,9 +139,12 @@ export const PostJob: React.FC = () => {
         containerSize: form.containerSize,
         containerType: form.containerType,
         containerNumber: form.containerNumber.trim() || undefined,
-        pickupTerminal: form.pickupTerminal,
-        deliveryArea: form.deliveryArea,
+        pickupAddress: form.pickupAddress.trim(),
+        pickupLat: form.pickupLat,
+        pickupLng: form.pickupLng,
         deliveryAddress: form.deliveryAddress.trim(),
+        deliveryLat: form.deliveryLat,
+        deliveryLng: form.deliveryLng,
         readyTime: new Date(form.readyTime).toISOString(),
         deadline: new Date(form.deadline).toISOString(),
         maxBudgetAED: form.maxBudgetAED ? Number(form.maxBudgetAED) : undefined,
@@ -210,7 +190,7 @@ export const PostJob: React.FC = () => {
           <CardTitle>{STEP_TITLES[step - 1]}</CardTitle>
           <CardDescription>
             {step === 1 && 'Pick the container you need moved.'}
-            {step === 2 && 'Where should the container be picked up and dropped off?'}
+            {step === 2 && 'Where in the UAE should the container be picked up and dropped off?'}
             {step === 3 && 'When is the container ready and when must it arrive?'}
             {step === 4 && 'Flag any special handling requirements.'}
             {step === 5 && 'Set an optional maximum budget for carriers to bid against.'}
@@ -246,25 +226,31 @@ export const PostJob: React.FC = () => {
 
           {step === 2 && (
             <>
-              <Select
-                label="Pickup terminal"
-                value={form.pickupTerminal}
-                onChange={(e) => setField('pickupTerminal', e.target.value)}
-                options={[{ value: '', label: 'Select terminal' }, ...TERMINAL_OPTIONS]}
-                error={errors.pickupTerminal}
+              <div className="flex items-start gap-2.5 rounded-lg bg-brand-teal-light px-3.5 py-3 text-sm text-brand-teal">
+                <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                Search anywhere in the UAE — ports, terminals, warehouses or street addresses.
+                Powered by OpenStreetMap.
+              </div>
+              <LocationInput
+                label="Pickup location"
+                placeholder="Search any location in the UAE…"
+                value={form.pickupAddress}
+                onChange={(v) => setField('pickupAddress', v)}
+                onSelect={(loc: GeoLocation) =>
+                  setForm((prev) => ({ ...prev, pickupAddress: loc.name, pickupLat: loc.lat, pickupLng: loc.lng }))
+                }
+                onClear={() => setForm((prev) => ({ ...prev, pickupLat: undefined, pickupLng: undefined }))}
+                error={errors.pickupAddress}
               />
-              <Select
-                label="Delivery area"
-                value={form.deliveryArea}
-                onChange={(e) => setField('deliveryArea', e.target.value)}
-                options={[{ value: '', label: 'Select area' }, ...AREA_OPTIONS]}
-                error={errors.deliveryArea}
-              />
-              <Input
-                label="Delivery address"
-                placeholder="Warehouse 12, JAFZA South, Dubai"
+              <LocationInput
+                label="Drop-off location"
+                placeholder="Search any location in the UAE…"
                 value={form.deliveryAddress}
-                onChange={(e) => setField('deliveryAddress', e.target.value)}
+                onChange={(v) => setField('deliveryAddress', v)}
+                onSelect={(loc: GeoLocation) =>
+                  setForm((prev) => ({ ...prev, deliveryAddress: loc.name, deliveryLat: loc.lat, deliveryLng: loc.lng }))
+                }
+                onClear={() => setForm((prev) => ({ ...prev, deliveryLat: undefined, deliveryLng: undefined }))}
                 error={errors.deliveryAddress}
               />
             </>
@@ -351,9 +337,8 @@ export const PostJob: React.FC = () => {
                   ? `${formatLabel(CONTAINER_SIZE_OPTIONS, form.containerSize)} — ${form.containerNumber}`
                   : formatLabel(CONTAINER_SIZE_OPTIONS, form.containerSize)],
                 ['Container type', formatLabel(CONTAINER_TYPE_OPTIONS, form.containerType)],
-                ['Pickup terminal', formatTerminalName(form.pickupTerminal)],
-                ['Delivery area', formatDeliveryArea(form.deliveryArea)],
-                ['Delivery address', form.deliveryAddress],
+                ['Pickup location', form.pickupAddress || '—'],
+                ['Drop-off location', form.deliveryAddress || '—'],
                 ['Ready time', new Date(form.readyTime).toLocaleString('en-AE')],
                 ['Deadline', new Date(form.deadline).toLocaleString('en-AE')],
                 ['Reefer required', form.requiresReefer ? 'Yes' : 'No'],
@@ -361,11 +346,9 @@ export const PostJob: React.FC = () => {
                 ['Budget', form.maxBudgetAED ? `${Number(form.maxBudgetAED).toLocaleString('en-AE')} AED` : 'Open (no maximum)'],
                 ...(form.notes ? [['Notes', form.notes]] : []),
               ].map(([label, value]) => (
-                <div key={label} className="flex items-start justify-between gap-6 px-4 py-3">
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500 shrink-0 pt-0.5">
-                    {label}
-                  </dt>
-                  <dd className="text-sm font-medium text-navy-800 text-right">{value}</dd>
+                <div key={label} className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-4 px-4 py-3">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</dt>
+                  <dd className="text-sm font-medium text-navy-800 sm:col-span-2">{value}</dd>
                 </div>
               ))}
             </dl>

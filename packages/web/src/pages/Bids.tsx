@@ -6,6 +6,7 @@ import { SubmitBid } from '@/components/bids/SubmitBid';
 import { JobDetail } from '@/components/jobs/JobDetail';
 import { useJobs } from '@/hooks/useJobs';
 import { Badge } from '@/components/ui/badge';
+import { pickupLabel, dropLabel } from '@/lib/utils';
 
 export const Bids: React.FC = () => {
   const navigate = useNavigate();
@@ -68,8 +69,7 @@ export const Bids: React.FC = () => {
               Bids for <span className="font-mono">{job.jobCode}</span>
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {job.pickupTerminal.replace(/_/g, ' ')} → {job.deliveryArea.replace(/_/g, ' ')} ·{' '}
-              {job.containerSize.replace(/_/g, ' ')}
+              {pickupLabel(job)} → {dropLabel(job)} · {job.containerSize.replace(/_/g, ' ')}
             </p>
           </div>
           <Badge variant={job.status.toLowerCase() as never}>

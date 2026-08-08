@@ -1,4 +1,24 @@
-const API_BASE_URL = '/api/v1';
+function normalizeBase(url: string): string {
+  const trimmed = url.trim().replace(/\/+$/, '');
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
+  return `https://${trimmed}`;
+}
+
+export function getApiBaseUrl(): string {
+  const configured =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+    (import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/v1` : '/api/v1');
+  return normalizeBase(configured);
+}
+
+export function getSocketUrl(): string {
+  const api = import.meta.env.VITE_API_URL as string | undefined;
+  if (!api) return 'http://localhost:5000';
+  return normalizeBase(api);
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('loadbyton_token');

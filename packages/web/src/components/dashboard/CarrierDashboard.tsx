@@ -11,7 +11,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatContainerSize, formatCurrencyAED, formatDeliveryArea, formatTerminalName } from '@/lib/utils';
+import { formatContainerSize, formatCurrencyAED, pickupLabel, dropLabel } from '@/lib/utils';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -256,8 +256,7 @@ export const CarrierDashboard: React.FC = () => {
                         {job.jobCode}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
-                        {formatContainerSize(job.containerSize)} · {formatTerminalName(job.pickupTerminal)} →{' '}
-                        {formatDeliveryArea(job.deliveryArea)}
+                        {formatContainerSize(job.containerSize)} · {pickupLabel(job)} → {dropLabel(job)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
@@ -304,8 +303,7 @@ export const CarrierDashboard: React.FC = () => {
                     <div className="min-w-0">
                       <p className="font-mono text-sm font-bold text-navy-900">{job.jobCode}</p>
                       <p className="text-xs text-gray-500 truncate">
-                        {formatContainerSize(job.containerSize)} · {formatTerminalName(job.pickupTerminal)} →{' '}
-                        {formatDeliveryArea(job.deliveryArea)}
+                        {formatContainerSize(job.containerSize)} · {pickupLabel(job)} → {dropLabel(job)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">

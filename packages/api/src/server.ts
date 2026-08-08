@@ -23,9 +23,22 @@ import webhooksRoutes from './routes/webhooks';
 
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
+  'http://localhost:3000',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
 ];
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
+  try {
+    const host = new URL(origin).hostname;
+    return host.endsWith('.onrender.com');
+  } catch {
+    return false;
+  }
+}
 
 export function createServer() {
   const app = express();
@@ -33,7 +46,7 @@ export function createServer() {
 
   const io = new SocketIOServer(server, {
     cors: {
-      origin: ALLOWED_ORIGINS,
+      origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
       methods: ['GET', 'POST'],
       credentials: true,
     },

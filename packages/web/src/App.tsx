@@ -25,7 +25,7 @@ const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AppShell: React.FC = () => (
-  <div className="min-h-screen flex flex-col bg-gray-50">
+  <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-navy-950 dark:text-gray-100">
     <Header />
     <div className="flex flex-1">
       <Sidebar />

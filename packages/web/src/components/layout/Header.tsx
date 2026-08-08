@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Truck, Bell, ShieldCheck, User, LogOut, ChevronDown, PlusCircle } from 'lucide-react';
+import { Truck, Bell, ShieldCheck, User, LogOut, ChevronDown, PlusCircle, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 import { Button } from '../ui/button';
 
 export const Header: React.FC = () => {
   const { user, role, setRole, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 bg-navy-900 border-b border-navy-700 text-white shadow-lg">
+    <header className="sticky top-0 z-40 bg-navy-900 border-b border-navy-700 text-white shadow-lg dark:bg-navy-950 dark:border-navy-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* Brand Logo & Ticker */}
@@ -40,8 +42,7 @@ export const Header: React.FC = () => {
           <Link to="/dashboard" className="hover:text-brand-orange transition-colors">Dashboard</Link>
           <Link to="/jobs" className="hover:text-brand-orange transition-colors">Loads & Bids</Link>
           <Link to="/tracking/job-102" className="hover:text-brand-orange transition-colors flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>Live Tracking</span>
+            <span>Tracking</span>
           </Link>
           <Link to="/admin" className="hover:text-brand-orange transition-colors text-xs text-gray-400 flex items-center space-x-1">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
@@ -65,7 +66,7 @@ export const Header: React.FC = () => {
           )}
 
           {/* Role Toggle Switcher for instant demo exploration */}
-          <div className="hidden sm:flex items-center bg-navy-800 p-1 rounded-lg border border-navy-700">
+          <div className="hidden sm:flex items-center bg-navy-800 p-1 rounded-lg border border-navy-700 dark:bg-navy-900 dark:border-navy-700">
             <button
               onClick={() => setRole('SHIPPER')}
               className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
@@ -83,6 +84,16 @@ export const Header: React.FC = () => {
               Carrier View
             </button>
           </div>
+
+          {/* Dark / Light Mode Toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="relative p-2 text-gray-300 hover:text-white hover:bg-navy-800 dark:hover:bg-navy-800 rounded-lg transition-colors"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
 
           {/* Notifications Bell */}
           <button className="relative p-2 text-gray-300 hover:text-white hover:bg-navy-800 rounded-lg transition-colors">
@@ -107,20 +118,20 @@ export const Header: React.FC = () => {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 text-gray-800 z-50 animate-fade-in">
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                  <p className="text-xs font-bold text-navy-900">{user?.profile?.companyName}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                  <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 text-gray-800 z-50 animate-fade-in dark:bg-navy-900 dark:border-gray-800 dark:text-gray-100">
+                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 dark:border-gray-800 dark:bg-navy-950/50">
+                  <p className="text-xs font-bold text-navy-900 dark:text-white">{user?.profile?.companyName}</p>
+                  <p className="text-xs text-gray-500 truncate dark:text-gray-400">{user?.email}</p>
+                  <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full dark:text-emerald-300 dark:bg-emerald-900/50">
                     TRN Verified ✓
                   </span>
                 </div>
                 <Link
                   to="/profile"
                   onClick={() => setDropdownOpen(false)}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium"
+                  className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium dark:text-gray-200 dark:hover:bg-navy-800"
                 >
-                  <User className="w-4 h-4 text-gray-500" />
+                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <span>Company Profile</span>
                 </Link>
                 <button
@@ -128,7 +139,7 @@ export const Header: React.FC = () => {
                     setDropdownOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium border-t border-gray-100"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium border-t border-gray-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:border-gray-800"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
