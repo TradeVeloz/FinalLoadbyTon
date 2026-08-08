@@ -26,7 +26,7 @@ const notifications: NotificationRecord[] = [
     userId: 'usr-carrier-1',
     type: 'JOB_AWARDED',
     title: 'Job awarded',
-    message: 'You won job LBT-DXB-2608-8812 for AED 980. Container pickup at Jebel Ali Terminal 1.',
+    message: 'You won job LBT-DXB-2608-8812 for AED 980. Container pickup at the designated UAE terminal.',
     jobId: 'job-102',
     isRead: false,
     createdAt: new Date(Date.now() - 3600000 * 9).toISOString(),

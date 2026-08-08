@@ -33,7 +33,7 @@ const seedProfile = (
 const users: UserRecord[] = [
   {
     id: 'usr-shipper-1',
-    email: 'shipper@jebelalilogistics.ae',
+    email: 'shipper@uaeports.ae',
     passwordHash: DEMO_PASSWORD_HASH,
     role: 'SHIPPER',
     isVerified: true,

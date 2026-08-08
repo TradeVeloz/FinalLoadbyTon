@@ -4,7 +4,7 @@ Guidance for AI coding assistants working in this repository.
 
 ## Project
 
-Loadbyton — freight bid marketplace for container haulage around Jebel Ali, Dubai.
+Loadbyton — freight bid marketplace for container haulage across the UAE.
 Monorepo with `packages/shared` (types), `packages/api` (Express backend),
 `packages/web` (React frontend).
 

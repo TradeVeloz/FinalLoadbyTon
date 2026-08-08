@@ -32,7 +32,7 @@ export function authHeader(token: string): { Authorization: string } {
   return { Authorization: `Bearer ${token}` };
 }
 
-export const SHIPPER_EMAIL = 'shipper@jebelalilogistics.ae';
+export const SHIPPER_EMAIL = 'shipper@uaeports.ae';
 export const CARRIER_EMAIL = 'carrier@dubaidrayage.com';
 export const ADMIN_EMAIL = 'admin@loadbyton.ae';
 

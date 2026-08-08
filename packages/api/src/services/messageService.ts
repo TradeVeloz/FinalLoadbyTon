@@ -6,7 +6,7 @@ const messages: MessageRecord[] = [
     jobId: 'job-101',
     senderId: 'usr-shipper-1',
     senderName: 'Al-Majid Global Freight',
-    content: 'Gate Pass DP World Jebel Ali has been issued for MSKU9281745.',
+    content: 'Terminal gate pass has been issued for MSKU9281745.',
     attachmentUrl: '/docs/gatepass_MSKU9281745.pdf',
     attachmentName: 'DP_World_GatePass.pdf',
     isRead: true,

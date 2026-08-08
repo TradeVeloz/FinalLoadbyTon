@@ -1,10 +1,10 @@
 # Loadbyton
 
-**Freight bid marketplace for container haulage — Jebel Ali, Dubai**
+**Freight bid marketplace for container haulage across the UAE**
 
 Loadbyton is a two-sided marketplace that replaces WhatsApp/phone negotiation for container drayage with a transparent bidding system. Shippers post haulage requirements, vetted carriers compete with live bids based on real-time truck availability, and shippers award in a couple of taps. Customs papers, collection receipts, chat, and tracking all live in one thread.
 
-- **Market:** ~20,000+ containers/day moving inland from Jebel Ali (15.5M TEU in 2024, world's 9th-busiest port)
+- **Market:** 20,000+ containers/day moving inland from UAE ports (Khalifa, Jebel Ali, Mina Saqr, Fujairah) — 15.5M TEU through UAE ports in 2024
 - **Average drayage fee:** ~AED 1,200
 - **Target take-rate:** 5–8%
 
@@ -46,7 +46,7 @@ Demo credentials (any password works against the mock store):
 
 | Role | Email |
 | --- | --- |
-| Shipper | `shipper@jebelalilogistics.ae` |
+| Shipper | `shipper@uaeports.ae` |
 | Carrier | `carrier@dubaidrayage.com` |
 
 ## Production stack

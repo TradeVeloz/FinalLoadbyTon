@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapPin, Loader2, Search, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { UAE_LOCATIONS, UaeLocation } from '../../data/uae-locations';
 
 export interface GeoLocation {
   name: string;
@@ -13,6 +14,13 @@ interface NominatimResult {
   display_name: string;
   lat: string;
   lon: string;
+}
+
+interface LocationOption {
+  key: string;
+  name: string;
+  lat: number;
+  lng: number;
 }
 
 interface LocationInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'onSelect'> {
@@ -29,14 +37,46 @@ const NOMINATIM_ENDPOINT =
 
 const UAE_VIEWBOX = '51.5,22.6,57.0,26.5';
 const DEBOUNCE_MS = 300;
-const MIN_QUERY_LENGTH = 2;
+const MIN_NETWORK_QUERY_LENGTH = 2;
 const MIN_REQUEST_INTERVAL_MS = 1000;
 const RESULTS_LIMIT = 6;
+
+function matchLocal(query: string): LocationOption[] {
+  const q = query.trim().toLowerCase();
+  if (q.length === 0) return [];
+  const tokens = q.split(/\s+/).filter(Boolean);
+
+  const matches: (UaeLocation & { score: number })[] = [];
+  for (const loc of UAE_LOCATIONS) {
+    const haystack = `${loc.name} ${loc.keywords.join(' ')}`.toLowerCase();
+    if (!tokens.every((token) => haystack.includes(token))) continue;
+    const nameLower = loc.name.toLowerCase();
+    const score = nameLower.startsWith(q) ? 0 : nameLower.includes(q) ? 1 : 2;
+    matches.push({ ...loc, score });
+  }
+
+  matches.sort((a, b) => a.score - b.score || a.name.localeCompare(b.name));
+  return matches.slice(0, RESULTS_LIMIT).map((loc) => ({
+    key: `local-${loc.name}`,
+    name: loc.name,
+    lat: loc.lat,
+    lng: loc.lng,
+  }));
+}
+
+function toOption(result: NominatimResult): LocationOption {
+  return {
+    key: `nom-${result.place_id}`,
+    name: result.display_name,
+    lat: Number(result.lat),
+    lng: Number(result.lon),
+  };
+}
 
 export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputProps>(
   ({ label, value, onChange, onSelect, onClear, error, placeholder, className, ...props }, ref) => {
     const [query, setQuery] = useState(value);
-    const [results, setResults] = useState<NominatimResult[]>([]);
+    const [nomResults, setNomResults] = useState<LocationOption[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [highlighted, setHighlighted] = useState(-1);
@@ -46,6 +86,24 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
     const lastRequestAtRef = useRef(0);
     const abortRef = useRef<AbortController | null>(null);
     const requestSeqRef = useRef(0);
+
+    const localResults = useMemo(() => matchLocal(query), [query]);
+
+    const merged: LocationOption[] = useMemo(() => {
+      const seen = new Set<string>();
+      const out: LocationOption[] = [];
+      for (const option of localResults) {
+        if (seen.has(option.name)) continue;
+        seen.add(option.name);
+        out.push(option);
+      }
+      for (const option of nomResults) {
+        if (seen.has(option.name)) continue;
+        seen.add(option.name);
+        out.push(option);
+      }
+      return out;
+    }, [localResults, nomResults]);
 
     useEffect(() => {
       setQuery(value);
@@ -63,11 +121,10 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
 
     useEffect(() => () => abortRef.current?.abort(), []);
 
-    const runSearch = useCallback((raw: string) => {
+    const runNetworkSearch = useCallback((raw: string) => {
       const q = raw.trim();
-      if (q.length < MIN_QUERY_LENGTH) {
-        setResults([]);
-        setOpen(false);
+      if (q.length < MIN_NETWORK_QUERY_LENGTH) {
+        setNomResults([]);
         setLoading(false);
         return;
       }
@@ -90,6 +147,7 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
           limit: String(RESULTS_LIMIT),
           countrycodes: 'ae',
           viewbox: UAE_VIEWBOX,
+          bounded: '1',
           'accept-language': 'en',
         });
 
@@ -103,16 +161,14 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
           })
           .then((data) => {
             if (seq !== requestSeqRef.current) return;
-            setResults(data);
+            setNomResults(data.map(toOption));
             setSearchedQuery(q);
-            setHighlighted(-1);
             setOpen(true);
           })
           .catch((err: unknown) => {
             if ((err as Error).name === 'AbortError') return;
             if (seq !== requestSeqRef.current) return;
-            setResults([]);
-            setOpen(false);
+            setNomResults([]);
           })
           .finally(() => {
             if (seq === requestSeqRef.current) setLoading(false);
@@ -126,48 +182,48 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
       }
     }, []);
 
-    const debouncedSearch = useMemo(() => {
+    const debouncedNetworkSearch = useMemo(() => {
       let timer: number | undefined;
       return (q: string) => {
         window.clearTimeout(timer);
-        timer = window.setTimeout(() => runSearch(q), DEBOUNCE_MS);
+        timer = window.setTimeout(() => runNetworkSearch(q), DEBOUNCE_MS);
       };
-    }, [runSearch]);
+    }, [runNetworkSearch]);
 
     const handleChange = (next: string) => {
       setQuery(next);
       setHighlighted(-1);
       onChange(next);
-      if (next.trim().length < MIN_QUERY_LENGTH) {
-        setResults([]);
-        setOpen(false);
-        return;
+      if (next.trim().length >= MIN_NETWORK_QUERY_LENGTH) {
+        debouncedNetworkSearch(next);
+      } else {
+        setNomResults([]);
+        setLoading(false);
       }
-      debouncedSearch(next);
+      if (matchLocal(next).length > 0) setOpen(true);
     };
 
-    const selectResult = (result: NominatimResult) => {
-      const name = result.display_name;
-      setQuery(name);
-      onChange(name);
-      onSelect?.({ name, lat: Number(result.lat), lng: Number(result.lon) });
+    const selectOption = (option: LocationOption) => {
+      setQuery(option.name);
+      onChange(option.name);
+      onSelect?.({ name: option.name, lat: option.lat, lng: option.lng });
       setOpen(false);
-      setResults([]);
+      setNomResults([]);
       setHighlighted(-1);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!open || results.length === 0) return;
+      if (!open || merged.length === 0) return;
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setHighlighted((i) => (i + 1) % results.length);
+        setHighlighted((i) => (i + 1) % merged.length);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setHighlighted((i) => (i - 1 + results.length) % results.length);
+        setHighlighted((i) => (i - 1 + merged.length) % merged.length);
       } else if (event.key === 'Enter') {
         event.preventDefault();
-        if (highlighted >= 0 && highlighted < results.length) {
-          selectResult(results[highlighted]);
+        if (highlighted >= 0 && highlighted < merged.length) {
+          selectOption(merged[highlighted]);
         }
       } else if (event.key === 'Escape') {
         setOpen(false);
@@ -178,10 +234,14 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
       setQuery('');
       onChange('');
       onClear?.();
-      setResults([]);
+      setNomResults([]);
       setOpen(false);
       setHighlighted(-1);
     };
+
+    const hasLocalOnly = localResults.length > 0 && nomResults.length === 0;
+    const showNoResults =
+      open && !loading && merged.length === 0 && query.trim().length >= MIN_NETWORK_QUERY_LENGTH;
 
     return (
       <div ref={containerRef} className="w-full space-y-1.5">
@@ -206,7 +266,7 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              if (results.length > 0) setOpen(true);
+              if (merged.length > 0) setOpen(true);
             }}
             placeholder={placeholder}
             className={cn(
@@ -234,18 +294,18 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
             ) : null}
           </div>
 
-          {open && results.length > 0 && (
+          {open && merged.length > 0 && (
             <ul
               id="location-suggestions"
               role="listbox"
               className="absolute z-50 mt-1.5 w-full max-h-72 overflow-auto rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-navy-900 animate-fade-in"
             >
-              {results.map((result, index) => (
-                <li key={result.place_id} role="option" aria-selected={index === highlighted}>
+              {merged.map((option, index) => (
+                <li key={option.key} role="option" aria-selected={index === highlighted}>
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => selectResult(result)}
+                    onClick={() => selectOption(option)}
                     className={cn(
                       'w-full flex items-start gap-2.5 px-3.5 py-2.5 text-left text-sm transition-colors',
                       index === highlighted
@@ -254,22 +314,26 @@ export const LocationInput = React.forwardRef<HTMLInputElement, LocationInputPro
                     )}
                   >
                     <MapPin className={cn('w-4 h-4 mt-0.5 shrink-0', index === highlighted ? 'text-brand-orange' : 'text-gray-400')} />
-                    <span className="min-w-0 flex-1 break-words">{result.display_name}</span>
+                    <span className="min-w-0 flex-1 break-words">{option.name}</span>
                   </button>
                 </li>
               ))}
             </ul>
           )}
 
-          {open && !loading && query.trim().length >= MIN_QUERY_LENGTH && results.length === 0 && (
+          {showNoResults && (
             <div className="absolute z-50 mt-1.5 w-full rounded-xl border border-gray-200 bg-white shadow-2xl px-3.5 py-3 text-sm text-gray-500 dark:border-gray-700 dark:bg-navy-900 dark:text-gray-400 animate-fade-in">
               No locations found for "{searchedQuery || query}"
             </div>
           )}
         </div>
         {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
-        {open && (
-          <p className="text-[10px] text-gray-400">Search limited to the United Arab Emirates · Powered by OpenStreetMap Nominatim</p>
+        {(open || hasLocalOnly) && (
+          <p className="text-[10px] text-gray-400">
+            {hasLocalOnly
+              ? 'Showing UAE locations instantly · Powered by OpenStreetMap Nominatim'
+              : 'Search covers all seven emirates · Powered by OpenStreetMap Nominatim'}
+          </p>
         )}
       </div>
     );

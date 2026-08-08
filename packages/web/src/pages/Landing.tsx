@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Footer } from '@/components/layout/Footer';
 
 const trustStats = [
-  { value: '15.5M', label: 'TEU handled through Jebel Ali' },
+  { value: '15.5M', label: 'TEU handled across UAE ports' },
   { value: '500+', label: 'Verified carrier fleets' },
   { value: '98%', label: 'On-time delivery rate' },
   { value: 'AED 6.5B', label: 'Annual serviceable spend' },
@@ -78,9 +78,9 @@ const testimonials = [
 ];
 
 const lanes = [
-  { route: 'Jebel Ali T2 → JAFZA South', price: 'AED 1,180', trend: '+3.1%' },
-  { route: 'Jebel Ali T1 → Al Quoz Ind', price: 'AED 1,280', trend: '+1.8%' },
-  { route: 'Jebel Ali T4 → Dubai South', price: 'AED 1,450', trend: '-0.6%' },
+  { route: 'Khalifa Port → Mussafah Industrial', price: 'AED 1,180', trend: '+3.1%' },
+  { route: 'Port Khalid → Al Quoz Ind', price: 'AED 1,280', trend: '+1.8%' },
+  { route: 'Mina Saqr → Dubai South / DWC', price: 'AED 1,450', trend: '-0.6%' },
 ];
 
 const sampleBids = [
@@ -131,7 +131,7 @@ export const Landing: React.FC = () => {
           <div>
             <div className="inline-flex items-center space-x-2 bg-navy-800/80 border border-navy-700 rounded-full px-3 py-1.5 text-xs text-emerald-300 mb-6">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Live marketplace · Jebel Ali Port, Dubai</span>
+              <span>Live marketplace · UAE-wide</span>
             </div>
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1]">
               Move containers faster.
@@ -140,7 +140,7 @@ export const Landing: React.FC = () => {
             </h1>
             <p className="mt-5 text-lg text-gray-300 max-w-xl leading-relaxed">
               Loadbyton replaces WhatsApp and phone negotiations with a transparent
-              bidding system for container drayage — from Jebel Ali terminal to
+              bidding system for container drayage — from port terminal to
               warehouse, in one thread.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -177,7 +177,7 @@ export const Landing: React.FC = () => {
                   <p className="font-mono text-sm font-bold text-white">LBT-DXB-2608-4921</p>
                   <p className="text-xs text-gray-400 flex items-center space-x-1 mt-1">
                     <MapPin className="w-3 h-3 text-brand-orange" />
-                    Jebel Ali T2 → JAFZA South
+                    Khalifa Port → Mussafah Industrial
                   </p>
                 </div>
                 <Badge variant="bidding">3 live bids</Badge>
@@ -252,7 +252,7 @@ export const Landing: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-widest text-emerald-400">Marketplace pulse</p>
-              <h2 className="mt-2 text-3xl font-extrabold tracking-tight">Jebel Ali moves every day on Loadbyton</h2>
+              <h2 className="mt-2 text-3xl font-extrabold tracking-tight">Containers move across the UAE every day on Loadbyton</h2>
               <p className="mt-4 text-gray-400 leading-relaxed">
                 412 containers moved today, 96 loads posted in the last 24 hours, and an
                 average drayage fee of AED 1,180 across the top lanes.
@@ -300,7 +300,7 @@ export const Landing: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-sm font-bold uppercase tracking-widest text-brand-orange">From the field</p>
           <h2 className="mt-2 text-3xl font-extrabold text-navy-900 tracking-tight">
-            Trusted by Dubai's freight community
+            Trusted across the UAE's freight community
           </h2>
           <div className="mt-12 grid md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
@@ -331,7 +331,7 @@ export const Landing: React.FC = () => {
         <div className="max-w-7xl mx-auto bg-gradient-to-r from-brand-orange to-brand-orange-hover rounded-2xl px-8 py-14 text-center text-white shadow-glow-orange">
           <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight">Start bidding today</h2>
           <p className="mt-3 max-w-xl mx-auto text-white/90">
-            Join 500+ verified carriers and Dubai's leading freight forwarders moving containers through Jebel Ali.
+            Join 500+ verified carriers and the UAE's leading freight forwarders moving containers across all seven emirates.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/register">

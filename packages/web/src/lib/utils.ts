@@ -16,12 +16,11 @@ export function formatCurrencyAED(amount: number): string {
 
 export function formatTerminalName(terminal: string): string {
   switch (terminal) {
-    case 'JEBEL_ALI_T1': return 'Jebel Ali Terminal 1';
-    case 'JEBEL_ALI_T2': return 'Jebel Ali Terminal 2';
-    case 'JEBEL_ALI_T3': return 'Jebel Ali Terminal 3';
-    case 'JEBEL_ALI_T4': return 'Jebel Ali Terminal 4';
     case 'KHALIFA': return 'Khalifa Port (Abu Dhabi)';
     case 'SHARJAH': return 'Sharjah Container Terminal';
+    case 'KHORFAKKAN': return 'Khor Fakkan Container Terminal';
+    case 'MINASAQR': return 'Mina Saqr (RAK)';
+    case 'FUJAIRAH': return 'Fujairah Terminal';
     default: return terminal;
   }
 }

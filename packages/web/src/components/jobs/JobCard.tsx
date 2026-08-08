@@ -86,7 +86,6 @@ export const JobCard: React.FC<{ job: Job }> = ({ job }) => {
                 <span className="break-words">{drop}</span>
               </span>
             </p>
-            <p className="pl-5 text-xs text-gray-500">{job.deliveryAddress}</p>
           </div>
 
           <div className="flex items-center justify-between border-t border-gray-100 pt-3">

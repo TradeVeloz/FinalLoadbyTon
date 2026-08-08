@@ -67,7 +67,7 @@ export const Sidebar: React.FC = () => {
         </p>
         <div className="px-3 py-3 bg-navy-800/60 rounded-xl border border-navy-700">
           <p className="text-xs font-semibold text-white">Live lane index</p>
-          <p className="text-xs text-gray-400 mt-1">Jebel Ali T2 → JAFZA</p>
+          <p className="text-xs text-gray-400 mt-1">Port → Industrial Zone</p>
           <p className="text-base font-bold text-emerald-400">AED 1,180</p>
           <div className="mt-2 h-1.5 bg-navy-700 rounded-full overflow-hidden">
             <div className="h-full w-2/3 bg-emerald-500 rounded-full" />

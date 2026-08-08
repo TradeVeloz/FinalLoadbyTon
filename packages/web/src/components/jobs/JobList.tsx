@@ -1,20 +1,19 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, PackageOpen, RefreshCw } from 'lucide-react';
+import { PlusCircle, PackageOpen, RefreshCw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useJobs } from '@/hooks/useJobs';
 import { JobCard } from './JobCard';
 import {
-  DeliveryArea,
   JobStatus,
-  Terminal,
 } from '@/types';
 import {
-  formatDeliveryArea,
-  formatTerminalName,
+  pickupLabel,
+  dropLabel,
 } from '@/lib/utils';
 
 const JOB_STATUSES: JobStatus[] = [
@@ -39,49 +38,34 @@ const jobStatusLabelMap: Record<JobStatus, string> = {
   CANCELLED: 'Cancelled',
 };
 
-const TERMINALS: Terminal[] = [
-  'JEBEL_ALI_T1',
-  'JEBEL_ALI_T2',
-  'JEBEL_ALI_T3',
-  'JEBEL_ALI_T4',
-  'KHALIFA',
-  'SHARJAH',
-];
-
-const AREAS: DeliveryArea[] = [
-  'JAFZA_NORTH',
-  'JAFZA_SOUTH',
-  'AL_QUOZ',
-  'DIP',
-  'NIP',
-  'DAFZA',
-  'DIC',
-  'DUBAI_SOUTH',
-  'OTHER',
-];
-
 interface Filters {
   status: string;
-  terminal: string;
-  area: string;
+  search: string;
 }
 
 export const JobList: React.FC = () => {
   const { role } = useAuth();
   const { jobs, loading, error, refresh } = useJobs();
-  const [filters, setFilters] = useState<Filters>({ status: '', terminal: '', area: '' });
+  const [filters, setFilters] = useState<Filters>({ status: '', search: '' });
 
   const applyFilters = useCallback(
     (next: Filters) => {
       setFilters(next);
       void refresh({
         status: next.status || undefined,
-        terminal: next.terminal || undefined,
-        area: next.area || undefined,
       });
     },
     [refresh],
   );
+
+  const filteredJobs = useMemo(() => {
+    const term = filters.search.trim().toLowerCase();
+    if (!term) return jobs;
+    return jobs.filter((job) => {
+      const route = `${pickupLabel(job)} ${dropLabel(job)}`.toLowerCase();
+      return route.includes(term);
+    });
+  }, [jobs, filters.search]);
 
   return (
     <div className="space-y-6">
@@ -103,7 +87,7 @@ export const JobList: React.FC = () => {
       </div>
 
       <Card className="shadow-sm">
-        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <Select
             label="Status"
             value={filters.status}
@@ -113,24 +97,21 @@ export const JobList: React.FC = () => {
               ...JOB_STATUSES.map((s) => ({ value: s, label: jobStatusLabelMap[s] })),
             ]}
           />
-          <Select
-            label="Pickup terminal"
-            value={filters.terminal}
-            onChange={(e) => applyFilters({ ...filters, terminal: e.target.value })}
-            options={[
-              { value: '', label: 'All terminals' },
-              ...TERMINALS.map((t) => ({ value: t, label: formatTerminalName(t) })),
-            ]}
-          />
-          <Select
-            label="Delivery area"
-            value={filters.area}
-            onChange={(e) => applyFilters({ ...filters, area: e.target.value })}
-            options={[
-              { value: '', label: 'All areas' },
-              ...AREAS.map((a) => ({ value: a, label: formatDeliveryArea(a) })),
-            ]}
-          />
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              Search locations
+            </label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Anywhere in the UAE — port, city or district"
+                className="pl-9"
+                value={filters.search}
+                onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -171,15 +152,23 @@ export const JobList: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() =>
-              applyFilters({ status: '', terminal: '', area: '' })
+              applyFilters({ status: '', search: '' })
             }
           >
             Clear filters
           </Button>
         </div>
+      ) : filteredJobs.length === 0 ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-10 text-center space-y-3">
+          <Search className="w-10 h-10 mx-auto text-gray-300" />
+          <p className="text-sm font-semibold text-navy-800">No loads match "{filters.search}"</p>
+          <p className="text-xs text-gray-500">
+            Try a different port, city or district across the UAE.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>

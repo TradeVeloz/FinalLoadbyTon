@@ -18,7 +18,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const saved = localStorage.getItem('loadbyton_user');
     return saved ? JSON.parse(saved) : {
       id: 'usr-shipper-1',
-      email: 'shipper@jebelalilogistics.ae',
+      email: 'shipper@uaeports.ae',
       role: 'SHIPPER',
       profile: {
         companyName: 'Al-Majid Global Freight LLC',

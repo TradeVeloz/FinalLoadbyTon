@@ -241,7 +241,7 @@ export const CarrierDashboard: React.FC = () => {
               <EmptyState
                 icon={Inbox}
                 title="No loads available"
-                subtitle="New container jobs around Jebel Ali will appear here as they are posted."
+                subtitle="New container jobs across the UAE will appear here as they are posted."
               />
             ) : (
               <div className="divide-y divide-gray-100">
