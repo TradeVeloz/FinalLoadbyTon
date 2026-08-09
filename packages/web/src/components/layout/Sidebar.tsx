@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useJobs } from '../../hooks/useJobs';
 import { cn } from '../../lib/utils';
 
 interface NavItem {
@@ -22,12 +23,11 @@ interface NavItem {
   roles?: string[];
 }
 
-const navItems: NavItem[] = [
+const staticNavItems: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
   { to: '/jobs', label: 'Loads & Bids', icon: <Container className="w-4 h-4" />, roles: ['SHIPPER', 'CARRIER'] },
   { to: '/jobs/new', label: 'Post Load', icon: <Truck className="w-4 h-4" />, roles: ['SHIPPER'] },
   { to: '/bids', label: 'My Bids', icon: <Gavel className="w-4 h-4" />, roles: ['CARRIER'] },
-  { to: '/tracking/job-102', label: 'Tracking', icon: <MapPin className="w-4 h-4" /> },
   { to: '/profile', label: 'Company Profile', icon: <User className="w-4 h-4" /> },
   { to: '/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
   { to: '/admin', label: 'Admin Console', icon: <ShieldCheck className="w-4 h-4" />, roles: ['ADMIN'] },
@@ -35,8 +35,21 @@ const navItems: NavItem[] = [
 
 export const Sidebar: React.FC = () => {
   const { role } = useAuth();
+  const { jobs } = useJobs();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  const trackableJob =
+    jobs.find((j) => j.status === 'IN_TRANSIT') ?? jobs.find((j) => j.status === 'AWARDED');
+
+  const navItems: NavItem[] = [
+    ...staticNavItems,
+    {
+      to: trackableJob ? `/tracking/${trackableJob.id}` : '/jobs',
+      label: 'Tracking',
+      icon: <MapPin className="w-4 h-4" />,
+    },
+  ];
 
   const visible = navItems.filter((item) => !item.roles || item.roles.includes(role));
 

@@ -3,6 +3,7 @@ import {
   generateToken,
   generateRefreshToken,
   verifyRefreshToken,
+  verifyMfaToken,
 } from '../utils/security';
 import {
   AuthResponse,
@@ -14,6 +15,13 @@ import {
 } from '../types';
 
 const DEMO_PASSWORD_HASH = bcrypt.hashSync('demo1234', 12);
+
+export const DEFAULT_NOTIFICATION_PREFS: Record<string, boolean> = {
+  newBid: true,
+  bidAccepted: true,
+  statusChange: true,
+  marketing: false,
+};
 
 const seedProfile = (
   userId: string,
@@ -164,13 +172,25 @@ export async function register(data: {
   return buildAuthResponse(user);
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse | null> {
+export type LoginResult = AuthResponse | { user: AuthUserResponse; requiresMfa: true } | null;
+
+export async function login(email: string, password: string): Promise<LoginResult> {
   const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
   if (!user) return null;
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) return null;
 
+  if (user.mfaEnabled && user.mfaSecret) {
+    return { user: toPublicUser(user), requiresMfa: true };
+  }
+
+  return buildAuthResponse(user);
+}
+
+export function verifyMfaChallenge(email: string, token: string): AuthResponse | null {
+  const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  if (!user || !user.mfaSecret || !verifyMfaToken(token, user.mfaSecret)) return null;
   return buildAuthResponse(user);
 }
 
@@ -232,6 +252,39 @@ export function setMfaSecret(userId: string, secret: string): void {
     user.mfaSecret = secret;
     user.mfaEnabled = true;
   }
+}
+
+export function clearMfaSecret(userId: string): void {
+  const user = users.find((u) => u.id === userId);
+  if (user) {
+    user.mfaSecret = undefined;
+    user.mfaEnabled = false;
+  }
+}
+
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<boolean> {
+  const user = users.find((u) => u.id === userId);
+  if (!user) return false;
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) return false;
+  user.passwordHash = await bcrypt.hash(newPassword, 12);
+  return true;
+}
+
+export function getNotificationPrefs(userId: string): Record<string, boolean> {
+  const user = users.find((u) => u.id === userId);
+  return { ...DEFAULT_NOTIFICATION_PREFS, ...(user?.notificationPrefs ?? {}) };
+}
+
+export function setNotificationPrefs(userId: string, prefs: Record<string, boolean>): Record<string, boolean> {
+  const user = users.find((u) => u.id === userId);
+  if (!user) return DEFAULT_NOTIFICATION_PREFS;
+  user.notificationPrefs = { ...DEFAULT_NOTIFICATION_PREFS, ...prefs };
+  return user.notificationPrefs;
 }
 
 export function getStats(userId: string): UserStats {

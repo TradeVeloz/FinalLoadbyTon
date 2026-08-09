@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useBids } from '@/hooks/useBids';
 import { useToast } from '@/hooks/useToast';
+import { useSocketContext } from '@/contexts/SocketContext';
 import { Bid, BidStatus } from '@/types';
 import { cn, formatCurrencyAED } from '@/lib/utils';
 
@@ -44,10 +45,11 @@ const SORTABLE_COLUMNS: { key: SortKey; label: string }[] = [
   { key: 'carrierRating', label: 'Rating' },
 ];
 
-export const BidList: React.FC<{ jobId: string }> = ({ jobId }) => {
+export const BidList: React.FC<{ jobId: string; onJobChanged?: () => void }> = ({ jobId, onJobChanged }) => {
   const { role } = useAuth();
   const { listBids, acceptBid, rejectBid } = useBids();
   const { addToast } = useToast();
+  const { on } = useSocketContext();
   const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +71,16 @@ export const BidList: React.FC<{ jobId: string }> = ({ jobId }) => {
   useEffect(() => {
     void loadBids();
   }, [loadBids]);
+
+  useEffect(() => {
+    const offs = [
+      on('bid:new', () => void loadBids()),
+      on('bid:accepted', () => void loadBids()),
+      on('bid:rejected', () => void loadBids()),
+      on('bid:updated', () => void loadBids()),
+    ];
+    return () => offs.forEach((off) => off());
+  }, [on, loadBids]);
 
   const hasAccepted = useMemo(() => bids.some((b) => b.status === 'ACCEPTED'), [bids]);
 
@@ -108,6 +120,7 @@ export const BidList: React.FC<{ jobId: string }> = ({ jobId }) => {
         description: `${bid.carrierName} has been awarded the load.`,
       });
       void loadBids();
+      onJobChanged?.();
     } catch (err) {
       addToast({
         type: 'error',
@@ -126,6 +139,7 @@ export const BidList: React.FC<{ jobId: string }> = ({ jobId }) => {
         description: `Rejected ${bid.carrierName}'s bid of ${formatCurrencyAED(bid.amountAED)}.`,
       });
       void loadBids();
+      onJobChanged?.();
     } catch (err) {
       addToast({
         type: 'error',

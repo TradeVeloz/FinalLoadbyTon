@@ -27,7 +27,7 @@ export const SubmitBid: React.FC<{ jobId: string }> = ({ jobId }) => {
   const { submitBid } = useBids();
   const { addToast } = useToast();
   const [form, setForm] = useState<SubmitBidForm>(EMPTY_FORM);
-  const [errors, setErrors] = useState<{ amountAED?: string; etaMinutes?: string }>({});
+  const [errors, setErrors] = useState<{ amountAED?: string; etaMinutes?: string; truckType?: string }>({});
   const [submitting, setSubmitting] = useState(false);
 
   const setField = (key: keyof SubmitBidForm, value: string) => {
@@ -44,9 +44,12 @@ export const SubmitBid: React.FC<{ jobId: string }> = ({ jobId }) => {
     e.preventDefault();
     const amountAED = Number(form.amountAED);
     const etaMinutes = Number(form.etaMinutes);
-    const nextErrors: { amountAED?: string; etaMinutes?: string } = {};
+    const nextErrors: { amountAED?: string; etaMinutes?: string; truckType?: string } = {};
     if (!amountAED || amountAED <= 0) nextErrors.amountAED = 'Enter an amount greater than 0';
     if (!etaMinutes || etaMinutes <= 0) nextErrors.etaMinutes = 'Enter an ETA greater than 0';
+    if (!form.truckType.trim() || form.truckType.trim().length < 2) {
+      nextErrors.truckType = 'Enter a truck type (e.g. 40ft flatbed)';
+    }
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       return;
@@ -117,6 +120,7 @@ export const SubmitBid: React.FC<{ jobId: string }> = ({ jobId }) => {
             placeholder="40ft flatbed / curtain-side"
             value={form.truckType}
             onChange={(e) => setField('truckType', e.target.value)}
+            error={errors.truckType}
           />
           <Input
             label="Driver name (optional)"

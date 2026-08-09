@@ -20,6 +20,7 @@ import analyticsRoutes from './routes/analytics';
 import trackingRoutes from './routes/tracking';
 import ratingsRoutes from './routes/ratings';
 import webhooksRoutes from './routes/webhooks';
+import notificationsRoutes from './routes/notifications';
 
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -76,6 +77,7 @@ export function createServer() {
   app.use('/api/v1/tracking', apiLimiter, trackingRoutes);
   app.use('/api/v1/ratings', apiLimiter, ratingsRoutes);
   app.use('/api/v1/webhooks', webhooksRoutes);
+  app.use('/api/v1/notifications', apiLimiter, notificationsRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

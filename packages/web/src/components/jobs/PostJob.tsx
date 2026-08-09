@@ -72,7 +72,7 @@ type Errors = Record<string, string>;
 export const PostJob: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const { createJob } = useJobs();
+  const { createJob, submitJob } = useJobs();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<PostJobForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
@@ -153,12 +153,14 @@ export const PostJob: React.FC = () => {
         hazmatClass: form.requiresHazmat ? form.hazmatClass.trim() : undefined,
         notes: form.notes.trim() || undefined,
       });
+
+      const published = await submitJob(created.id);
       addToast({
         type: 'success',
         title: 'Load posted',
-        description: `${created.jobCode} is now open for bidding.`,
+        description: `${published.jobCode} is now open for bidding.`,
       });
-      navigate(`/jobs/${created.id}`);
+      navigate(`/jobs/${published.id}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       addToast({ type: 'error', title: 'Could not post load', description: message });

@@ -34,6 +34,23 @@ router.post('/verify', authenticate, (req: AuthenticatedRequest, res: Response) 
   });
 });
 
+router.get('/notifications', authenticate, (req: AuthenticatedRequest, res: Response) => {
+  return res.json({ prefs: authService.getNotificationPrefs(req.user!.userId) });
+});
+
+router.put('/notifications', authenticate, (req: AuthenticatedRequest, res: Response) => {
+  const raw = req.body as Record<string, unknown>;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return res.status(400).json({ error: 'Invalid notification preferences' });
+  }
+  const prefs: Record<string, boolean> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (typeof value === 'boolean') prefs[key] = value;
+  }
+  const saved = authService.setNotificationPrefs(req.user!.userId, prefs);
+  return res.json({ message: 'Notification preferences updated', prefs: saved });
+});
+
 router.put('/:id/verify', authenticate, (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = authService.verifyUser(req.user!.userId, req.params.id);

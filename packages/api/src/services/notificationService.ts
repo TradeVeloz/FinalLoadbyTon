@@ -1,4 +1,5 @@
 import { NotificationRecord, NotificationType } from '../types';
+import { broadcastToUser } from '../socket/emitter';
 
 const notifications: NotificationRecord[] = [
   {
@@ -47,6 +48,7 @@ export function createNotification(
     createdAt: new Date().toISOString(),
   };
   notifications.push(notification);
+  broadcastToUser(data.userId, 'notification', notification);
   return notification;
 }
 

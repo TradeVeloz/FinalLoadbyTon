@@ -28,11 +28,11 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">UAE Coverage</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Ports across all seven emirates</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Free zones & industrial areas</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Warehouse & distribution parks</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Inland depots & container yards</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">City-to-city trucking lanes</a></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Ports across all seven emirates</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Free zones & industrial areas</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Warehouse & distribution parks</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Inland depots & container yards</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">City-to-city trucking lanes</span></li>
             </ul>
           </div>
 
@@ -40,11 +40,11 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Top Drayage Lanes</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Port → Dubai South / DWC</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Port → Al Quoz Industrial</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Port → Dubai Investments Park</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Khalifa Port → Mussafah</a></li>
-              <li><a href="#" className="hover:text-brand-orange transition-colors">Khor Fakkan → Interior Emirates</a></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Port → Dubai South / DWC</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Port → Al Quoz Industrial</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Port → Dubai Investments Park</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Khalifa Port → Mussafah</span></li>
+              <li><span className="hover:text-brand-orange transition-colors cursor-default">Khor Fakkan → Interior Emirates</span></li>
             </ul>
           </div>
 
@@ -73,9 +73,9 @@ export const Footer: React.FC = () => {
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 space-y-4 sm:space-y-0">
           <p>© {new Date().getFullYear()} Loadbyton Technologies FZ-LLC. All rights reserved.</p>
           <div className="flex space-x-6">
-            <a href="#" className="hover:text-gray-400">Privacy Policy</a>
-            <a href="#" className="hover:text-gray-400">Terms of Service</a>
-            <a href="#" className="hover:text-gray-400">Carrier Operating Standards</a>
+            <span className="hover:text-gray-400 cursor-default">Privacy Policy</span>
+            <span className="hover:text-gray-400 cursor-default">Terms of Service</span>
+            <span className="hover:text-gray-400 cursor-default">Carrier Operating Standards</span>
           </div>
         </div>
 

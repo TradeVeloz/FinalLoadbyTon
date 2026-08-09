@@ -6,6 +6,8 @@ import {
   registerSchema,
   loginSchema,
   mfaVerifySchema,
+  mfaChallengeSchema,
+  changePasswordSchema,
   refreshSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -47,6 +49,27 @@ router.post('/mfa/verify', authLimiter, validate(mfaVerifySchema), (req: Authent
   const { token, secret } = req.body;
   const isValid = verifyMfaToken(token, secret);
   return res.json({ success: isValid, mfaEnabled: isValid });
+});
+
+router.post('/mfa/challenge', authLimiter, validate(mfaChallengeSchema), (req: AuthenticatedRequest, res: Response) => {
+  const response = authService.verifyMfaChallenge(req.body.email, req.body.token);
+  if (!response) {
+    return res.status(401).json({ error: 'Invalid verification code' });
+  }
+  return res.json(response);
+});
+
+router.post('/mfa/disable', authenticate, (req: AuthenticatedRequest, res: Response) => {
+  authService.clearMfaSecret(req.user!.userId);
+  return res.json({ success: true, mfaEnabled: false });
+});
+
+router.post('/change-password', authenticate, validate(changePasswordSchema), async (req: AuthenticatedRequest, res: Response) => {
+  const ok = await authService.changePassword(req.user!.userId, req.body.currentPassword, req.body.newPassword);
+  if (!ok) {
+    return res.status(400).json({ error: 'Current password is incorrect' });
+  }
+  return res.json({ message: 'Password changed successfully' });
 });
 
 router.post('/refresh', validate(refreshSchema), (req: AuthenticatedRequest, res: Response) => {

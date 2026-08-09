@@ -36,6 +36,16 @@ export const mfaVerifySchema = z.object({
   secret: z.string().min(16),
 });
 
+export const mfaChallengeSchema = z.object({
+  email: emailSchema,
+  token: z.string().min(6, 'Enter the 6-digit code').max(8),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: passwordSchema,
+});
+
 export const refreshSchema = z.object({
   refreshToken: z.string().min(10),
 });

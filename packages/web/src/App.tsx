@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
@@ -7,6 +7,7 @@ import { Landing } from './pages/Landing';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
 import { MFA } from './components/auth/MFA';
+import { ForgotPassword } from './pages/ForgotPassword';
 import { Dashboard } from './pages/Dashboard';
 import { Jobs } from './pages/Jobs';
 import { Bids } from './pages/Bids';
@@ -17,11 +18,15 @@ import { Admin } from './pages/Admin';
 import { useAuth } from './hooks/useAuth';
 
 const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return children;
+  return <>{children}</>;
+};
+
+const RequireRole: React.FC<{ roles: string[]; children: React.ReactNode }> = ({ roles, children }) => {
+  const { role } = useAuth();
+  if (!roles.includes(role)) {
+    return <Navigate to="/dashboard" replace />;
   }
-  return children;
+  return <>{children}</>;
 };
 
 const AppShell: React.FC = () => (
@@ -36,10 +41,18 @@ const AppShell: React.FC = () => (
           <Route path="/jobs/new" element={<Jobs postMode />} />
           <Route path="/jobs/:id" element={<Jobs detailMode />} />
           <Route path="/bids" element={<Bids />} />
+          <Route path="/bids/:jobId" element={<Bids />} />
           <Route path="/tracking/:jobId" element={<Tracking />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/admin"
+            element={
+              <RequireRole roles={['ADMIN']}>
+                <Admin />
+              </RequireRole>
+            }
+          />
           <Route path="*" element={<Dashboard />} />
         </Routes>
       </main>
@@ -55,6 +68,7 @@ const App: React.FC = () => {
       <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
       <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
       <Route path="/mfa" element={<AuthLayout><MFA /></AuthLayout>} />
+      <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
       <Route path="/*" element={<AppShell />} />
     </Routes>
   );

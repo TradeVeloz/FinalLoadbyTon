@@ -34,6 +34,8 @@ export interface User {
   id: string;
   email: string;
   role: Role;
+  isVerified?: boolean;
+  mfaEnabled?: boolean;
   profile?: UserProfile;
 }
 
@@ -119,6 +121,26 @@ export interface Payment {
   netCarrierAED: number;
   status: PaymentStatus;
   transactionRef?: string;
+  createdAt: string;
+}
+
+export type NotificationType =
+  | 'BID_RECEIVED'
+  | 'BID_ACCEPTED'
+  | 'JOB_AWARDED'
+  | 'JOB_STARTED'
+  | 'JOB_COMPLETED'
+  | 'PAYMENT_RELEASED'
+  | 'DEMURRAGE_ALERT';
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  jobId?: string;
+  isRead: boolean;
   createdAt: string;
 }
 

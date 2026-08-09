@@ -63,6 +63,7 @@ export interface UserRecord {
   isVerified: boolean;
   mfaEnabled: boolean;
   mfaSecret?: string;
+  notificationPrefs?: Record<string, boolean>;
   profile?: UserProfileRecord;
   createdAt: string;
 }

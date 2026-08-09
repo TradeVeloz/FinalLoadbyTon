@@ -30,8 +30,10 @@ export const Login: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
       if (data.requiresMfa) {
+        sessionStorage.setItem('loadbyton_pending_mfa', email);
         setMfaRequired(true);
         addToast({ type: 'warning', title: '2FA required', description: 'Enter your verification code to continue.' });
+        navigate('/mfa');
         return;
       }
       login(data.user, data.token);

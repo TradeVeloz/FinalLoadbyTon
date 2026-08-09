@@ -104,12 +104,12 @@ export const CarrierDashboard: React.FC = () => {
     [jobs]
   );
   const myActiveLoads = useMemo(
-    () => jobs.filter((job) => ACTIVE_JOB_STATUSES.includes(job.status) && job.carrierName),
-    [jobs]
+    () => jobs.filter((job) => ACTIVE_JOB_STATUSES.includes(job.status) && job.carrierId === user?.id),
+    [jobs, user]
   );
   const activeJobCount = useMemo(
-    () => jobs.filter((job) => ACTIVE_JOB_STATUSES.includes(job.status)).length,
-    [jobs]
+    () => jobs.filter((job) => ACTIVE_JOB_STATUSES.includes(job.status) && job.carrierId === user?.id).length,
+    [jobs, user]
   );
 
   useEffect(() => {

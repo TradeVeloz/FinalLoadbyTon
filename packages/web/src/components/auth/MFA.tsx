@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Truck, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,21 +9,18 @@ import { User } from '@/types';
 
 export const MFA: React.FC = () => {
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   const { addToast } = useToast();
 
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resendIn, setResendIn] = useState(30);
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
+
+  const email = sessionStorage.getItem('loadbyton_pending_mfa') ?? '';
 
   useEffect(() => {
     inputs.current[0]?.focus();
-    const interval = setInterval(() => {
-      setResendIn((sec) => (sec > 0 ? sec - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleChange = (index: number, value: string) => {
@@ -48,13 +45,18 @@ export const MFA: React.FC = () => {
       setError('Enter the full 6-digit code.');
       return;
     }
+    if (!email) {
+      setError('No pending sign-in found. Please sign in again.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
-      const data = await fetchApi<{ user: User; token: string }>('/auth/mfa/verify', {
+      const data = await fetchApi<{ user: User; token: string; refreshToken: string }>('/auth/mfa/challenge', {
         method: 'POST',
-        body: JSON.stringify({ code: otp }),
+        body: JSON.stringify({ email, token: otp }),
       });
+      sessionStorage.removeItem('loadbyton_pending_mfa');
       login(data.user, data.token);
       addToast({ type: 'success', title: 'Verified', description: 'Two-factor authentication passed.' });
       navigate(data.user.role === 'ADMIN' ? '/admin' : '/dashboard');
@@ -64,16 +66,6 @@ export const MFA: React.FC = () => {
       inputs.current[0]?.focus();
     } finally {
       setLoading(false);
-    }
-  };
-
-  const resend = async () => {
-    setResendIn(30);
-    try {
-      await fetchApi('/auth/mfa/setup', { method: 'POST' });
-      addToast({ type: 'info', title: 'Code sent', description: 'A new code was sent to your authenticator app.' });
-    } catch {
-      addToast({ type: 'info', title: 'Code sent', description: 'Check your authenticator app for the latest code.' });
     }
   };
 
@@ -136,20 +128,25 @@ export const MFA: React.FC = () => {
               {loading ? 'Verifying…' : 'Verify & continue'}
             </Button>
 
-            <div className="mt-4 text-sm">
-              {resendIn > 0 ? (
-                <span className="text-gray-400">Resend code in {resendIn}s</span>
-              ) : (
-                <button onClick={resend} className="font-medium text-brand-orange hover:underline">
-                  Resend code
-                </button>
-              )}
+            <div className="mt-4 text-sm text-gray-400">
+              Use the 6-digit code from your authenticator app. Codes refresh every 30 seconds.
             </div>
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-400">
-            Signed in as <span className="text-gray-200 font-medium">{user?.email}</span>
+            {email ? (
+              <>Signed in as <span className="text-gray-200 font-medium">{email}</span></>
+            ) : (
+              'No pending sign-in found.'
+            )}
           </p>
+          {!email && (
+            <div className="mt-2 text-center">
+              <Link to="/login" className="text-sm font-medium text-brand-orange hover:underline">
+                Back to sign in
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

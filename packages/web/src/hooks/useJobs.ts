@@ -43,9 +43,13 @@ export function useJobs() {
     return fetchApi<Job>(`/jobs/${id}/status`, { method: 'POST', body: JSON.stringify({ status }) });
   }, []);
 
+  const submitJob = useCallback(async (id: string): Promise<Job> => {
+    return fetchApi<Job>(`/jobs/${id}/submit`, { method: 'POST' });
+  }, []);
+
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
-  return { jobs, loading, error, refresh: fetchJobs, getJob, createJob, updateJobStatus };
+  return { jobs, loading, error, refresh: fetchJobs, getJob, createJob, updateJobStatus, submitJob };
 }

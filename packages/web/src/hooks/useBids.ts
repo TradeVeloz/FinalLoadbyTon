@@ -15,6 +15,10 @@ export function useBids() {
     return fetchApi<Bid[]>(`/bids/job/${jobId}`);
   }, []);
 
+  const listMyBids = useCallback(async (): Promise<Bid[]> => {
+    return fetchApi<Bid[]>('/bids/mine');
+  }, []);
+
   const submitBid = useCallback(async (jobId: string, payload: SubmitBidPayload): Promise<Bid> => {
     return fetchApi<Bid>(`/bids/job/${jobId}`, { method: 'POST', body: JSON.stringify(payload) });
   }, []);
@@ -31,5 +35,5 @@ export function useBids() {
     return fetchApi<Bid>(`/bids/${bidId}`, { method: 'PUT', body: JSON.stringify({ status }) });
   }, []);
 
-  return { listBids, submitBid, acceptBid, rejectBid, updateBidStatus };
+  return { listBids, listMyBids, submitBid, acceptBid, rejectBid, updateBidStatus };
 }

@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge, BadgeProps } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useJobs } from '@/hooks/useJobs';
+import { useToast } from '@/hooks/useToast';
+import { useSocketContext } from '@/contexts/SocketContext';
 import { BidList } from '@/components/bids/BidList';
 import { SubmitBid } from '@/components/bids/SubmitBid';
 import { Chat } from '@/components/messaging/Chat';
@@ -60,10 +62,27 @@ const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label,
 export const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { role } = useAuth();
-  const { getJob } = useJobs();
+  const { getJob, submitJob } = useJobs();
+  const { addToast } = useToast();
+  const { on } = useSocketContext();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+
+  const load = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getJob(id);
+      setJob(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load job');
+    } finally {
+      setLoading(false);
+    }
+  }, [id, getJob]);
 
   useEffect(() => {
     if (!id) {
@@ -71,23 +90,40 @@ export const JobDetail: React.FC = () => {
       setLoading(false);
       return;
     }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    getJob(id)
-      .then((data) => {
-        if (!cancelled) setJob(data);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load job');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+    void load();
+  }, [id, load]);
+
+  useEffect(() => {
+    if (!id) return;
+    const offs = [
+      on('job:awarded', () => void load()),
+      on('bid:accepted', () => void load()),
+      on('bid:new', () => void load()),
+    ];
+    return () => offs.forEach((off) => off());
+  }, [id, on, load]);
+
+  const handlePublish = async () => {
+    if (!job) return;
+    setPublishing(true);
+    try {
+      const updated = await submitJob(job.id);
+      setJob(updated);
+      addToast({
+        type: 'success',
+        title: 'Load published',
+        description: `${updated.jobCode} is now open for bidding.`,
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, getJob]);
+    } catch (err: unknown) {
+      addToast({
+        type: 'error',
+        title: 'Could not publish load',
+        description: err instanceof Error ? err.message : 'Something went wrong',
+      });
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -133,7 +169,7 @@ export const JobDetail: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <Link to="/jobs" className="text-gray-500 hover:text-navy-800">
             <ArrowLeft className="w-5 h-5" />
@@ -141,11 +177,19 @@ export const JobDetail: React.FC = () => {
           <h1 className="font-mono text-2xl font-bold text-navy-900">{job.jobCode}</h1>
           <Badge variant={statusVariantMap[job.status]}>{statusLabelMap[job.status]}</Badge>
         </div>
-        <Link to="/jobs" className="inline-flex">
-          <Button variant="outline" size="sm">
-            All loads
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {role === 'SHIPPER' && job.status === 'DRAFT' && (
+            <Button variant="primary" size="sm" onClick={() => void handlePublish()} disabled={publishing}>
+              <Rocket className="w-4 h-4 mr-1.5" />
+              {publishing ? 'Publishing…' : 'Publish for Bidding'}
+            </Button>
+          )}
+          <Link to="/jobs" className="inline-flex">
+            <Button variant="outline" size="sm">
+              All loads
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card>
@@ -224,7 +268,7 @@ export const JobDetail: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <BidList jobId={job.id} />
+          <BidList jobId={job.id} onJobChanged={load} />
           {role === 'CARRIER' && openToBids && <SubmitBid jobId={job.id} />}
         </div>
         <div className="space-y-6">

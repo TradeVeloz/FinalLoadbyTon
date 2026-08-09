@@ -14,6 +14,10 @@ router.get('/job/:jobId', (req: AuthenticatedRequest, res: Response) => {
   return res.json(bidService.listBidsForJob(req.params.jobId));
 });
 
+router.get('/mine', authenticate, authorizeCarrier(), (req: AuthenticatedRequest, res: Response) => {
+  return res.json(bidService.listBidsByCarrier(req.user!.userId));
+});
+
 router.post('/job/:jobId', authenticate, authorizeCarrier(), validate(bidCreateSchema), (req: AuthenticatedRequest, res: Response) => {
   const carrier = authService.getUserById(req.user!.userId);
   if (!carrier) {
